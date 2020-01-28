@@ -51,14 +51,110 @@ namespace Talent.Services.Profile.Domain.Services
 
         public async Task<TalentProfileViewModel> GetTalentProfile(string Id)
         {
-            //Your code here;
-            throw new NotImplementedException();
+            User profile = await _userRepository.GetByIdAsync(Id);
+            if (profile != null)
+            {
+                var videoUrl = string.IsNullOrWhiteSpace(profile.VideoName)
+                          ? ""
+                          : await _fileService.GetFileURL(profile.VideoName, FileType.UserVideo);
+
+                var cvUrl = string.IsNullOrWhiteSpace(profile.CvName)
+                          ? ""
+                          : await _fileService.GetFileURL(profile.CvName, FileType.UserVideo);
+
+                //var languages = profile.Languages.Select(x => ViewModelFromSkill(x)).ToList();
+
+                var skills = profile.Skills.Select(x => ViewModelFromSkill(x)).ToList();
+
+                var result = new TalentProfileViewModel
+                {
+                    Id = profile.Id,
+                    FirstName = profile.FirstName,
+                    MiddleName = profile.MiddleName,
+                    LastName = profile.LastName,
+                    Gender = profile.Gender,
+                    Email = profile.Email,
+                    Phone = profile.Phone,
+                    MobilePhone = profile.MobilePhone,
+                    IsMobilePhoneVerified = profile.IsMobilePhoneVerified,
+                    Address = profile.Address,
+                    Nationality = profile.Nationality,
+                    VisaStatus = profile.VisaStatus,
+                    VisaExpiryDate = profile.VisaExpiryDate,
+                    ProfilePhoto = profile.ProfilePhoto,
+                    ProfilePhotoUrl = profile.ProfilePhotoUrl,
+                    VideoName = profile.VideoName,
+                    VideoUrl = videoUrl,
+                    CvName = profile.CvName,
+                    CvUrl = cvUrl,
+                    Summary = profile.Summary,
+                    Description = profile.Description,
+                    LinkedAccounts = profile.LinkedAccounts,
+                    JobSeekingStatus = profile.JobSeekingStatus,
+                    Skills = skills,
+                };
+                return result;
+            }
+
+            return null;
         }
 
-        public async Task<bool> UpdateTalentProfile(TalentProfileViewModel model, string updaterId)
+        public async Task<bool> UpdateTalentProfile(TalentProfileViewModel talent, string updaterId)
         {
-            //Your code here;
-            throw new NotImplementedException();
+            try
+            {
+                if (talent.Id != null)
+                {
+                    User existingUser = (await _userRepository.GetByIdAsync(talent.Id));
+                    existingUser.FirstName = talent.FirstName;
+                    existingUser.MiddleName = talent.MiddleName;
+                    existingUser.LastName = talent.LastName;
+                    existingUser.Gender = talent.Gender;
+                    existingUser.Email = talent.Email;
+                    existingUser.Phone = talent.Phone;
+                    existingUser.MobilePhone = talent.MobilePhone;
+                    existingUser.IsMobilePhoneVerified = talent.IsMobilePhoneVerified;
+                    existingUser.Address = talent.Address;
+                    existingUser.Nationality = talent.Nationality;
+                    existingUser.VisaStatus = talent.VisaStatus;
+                    existingUser.JobSeekingStatus = talent.JobSeekingStatus;
+                    existingUser.VisaExpiryDate = talent.VisaExpiryDate;
+                    existingUser.Summary = talent.Summary;
+                    existingUser.Description = talent.Description;
+                    existingUser.ProfilePhoto = talent.ProfilePhoto;
+                    existingUser.ProfilePhotoUrl = talent.ProfilePhotoUrl;
+                    existingUser.VideoName = talent.VideoName;
+                    existingUser.CvName = talent.CvName;
+                    existingUser.LinkedAccounts = talent.LinkedAccounts;
+                    existingUser.UpdatedBy = updaterId;
+                    existingUser.UpdatedOn = DateTime.Now;
+
+                    var newSkills = new List<UserSkill>();
+                    foreach (var item in talent.Skills)
+                    {
+                        var skill = existingUser.Skills.SingleOrDefault(x => x.Id == item.Id);
+                        if (skill == null)
+                        {
+                            skill = new UserSkill
+                            {
+                                Id = ObjectId.GenerateNewId().ToString(),
+                                IsDeleted = false
+                            };
+                        }
+                        UpdateSkillFromView(item, skill);
+                        newSkills.Add(skill);
+                    }
+                    existingUser.Skills = newSkills;
+
+                    await _userRepository.Update(existingUser);
+                    return true;
+                }
+                return false;
+            }
+            catch (MongoException e)
+            {
+                return false;
+            }
         }
 
         public async Task<EmployerProfileViewModel> GetEmployerProfile(string Id, string role)
@@ -350,7 +446,7 @@ namespace Talent.Services.Profile.Domain.Services
             //Your code here;
             throw new NotImplementedException();
         }
-         
+
         public async Task<int> GetTotalTalentsForClient(string clientId, string recruiterId)
         {
             //Your code here;

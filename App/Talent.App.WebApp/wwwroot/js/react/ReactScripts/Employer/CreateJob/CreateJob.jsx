@@ -185,7 +185,7 @@ export default class CreateJob extends React.Component {
                                                     <br />
                                                 </div>
                                                 <div className="four wide column">
-                                                    <JobDetailsCard
+                                                    <JobDetailsC    ard
                                                         expiryDate={this.state.jobData.expiryDate}
                                                         jobDetails={this.state.jobData.jobDetails}
                                                         updateStateData={this.updateStateData}

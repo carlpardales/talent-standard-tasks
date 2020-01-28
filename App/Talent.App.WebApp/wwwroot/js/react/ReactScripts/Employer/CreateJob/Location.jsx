@@ -60,7 +60,7 @@ export class Location extends React.Component {
         <div>
             <select className="ui right labeled dropdown"
                 placeholder="Country"
-                value={selectedCountry}
+                value={selectedCountry} 
                 onChange={this.handleChange}
                 name="country">
 

@@ -10,6 +10,9 @@ export default class VisaStatus extends React.Component {
     
 
     render() {
+        return (
+            <h1>Your code goes here</h1>
+        );       
       
     }
 }
