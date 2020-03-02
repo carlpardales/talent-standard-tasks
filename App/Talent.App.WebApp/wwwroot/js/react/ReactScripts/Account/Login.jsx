@@ -88,8 +88,11 @@ export default class LoginForm extends React.Component {
             password: this.state.password
         }
 
+        const localUrl = 'http://localhost:60998/authentication/authentication/signin';
+        const azureUrl = 'https://standardtasktalentservicesidentity.azurewebsites.net/authentication/authentication/signin'
+
         $.ajax({
-            url: 'http://localhost:60998/authentication/authentication/signin',
+            url: azureUrl,
             type: 'POST',
             data: JSON.stringify(loginModel),
             contentType: 'application/json',

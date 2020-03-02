@@ -40,8 +40,12 @@ export default class AdaptiveBanner extends React.Component {
 
     isUserAuthenticated() {
         var cookies = Cookies.get('talentAuthToken')
+
+        const localUrl = 'http://localhost:60290/profile/profile/isUserAuthenticated';
+        const azureUrl = 'https://standardtasktalentservicesprofile.azurewebsites.net/profile/profile/isUserAuthenticated'
+
         $.ajax({
-            url: 'http://localhost:60290/profile/profile/isUserAuthenticated',
+            url: azureUrl,
             headers: {
                 'Authorization': 'Bearer ' + cookies,
                 'Content-Type': 'application/json'
