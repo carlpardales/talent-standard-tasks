@@ -191,9 +191,11 @@ export class Address extends Component {
         const selectedCountry = this.state.newAddress.country;
         const selectedCity = this.state.newAddress.city;
 
-        citiesOptions = Countries[selectedCountry].map(x =>
-            <option key={x} value={x}> {x} </option >
-        );
+        if (selectedCountry) {
+            citiesOptions = Countries[selectedCountry].map(x =>
+                <option key={x} value={x}> {x} </option >
+            );
+        }
 
         return (
             <div className="field">
@@ -234,8 +236,6 @@ export class Nationality extends Component {
     render() {
         let countriesOptions = [];
         const selectedCountry = this.props.nationalityData;
-
-        console.log(`nationality: ${selectedCountry}`);
 
         countriesOptions = Object.keys(Countries).map((x) =>
             <option key={x} value={x}> {x} </option>

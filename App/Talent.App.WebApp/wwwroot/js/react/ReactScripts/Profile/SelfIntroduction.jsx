@@ -57,6 +57,7 @@ export default class SelfIntroduction extends Component {
                                 placeholder="Please tell us about any hobbies, additional expertise, or anything else you'd like to add."
                                 value={this.props.description}
                                 onChange={this.handleChange}
+                                maxLength={600}
                             >
                             </textarea>
                         </div>

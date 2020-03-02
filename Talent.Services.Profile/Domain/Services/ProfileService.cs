@@ -62,9 +62,9 @@ namespace Talent.Services.Profile.Domain.Services
                           ? ""
                           : await _fileService.GetFileURL(profile.CvName, FileType.UserVideo);
 
-                //var languages = profile.Languages.Select(x => ViewModelFromSkill(x)).ToList();
-
+                var languages = profile.Languages.Select(x => ViewModelFromLanguage(x)).ToList();
                 var skills = profile.Skills.Select(x => ViewModelFromSkill(x)).ToList();
+                var experience = profile.Experience.Select(x => ViewModelFromExperience(x)).ToList();
 
                 var result = new TalentProfileViewModel
                 {
@@ -91,7 +91,9 @@ namespace Talent.Services.Profile.Domain.Services
                     Description = profile.Description,
                     LinkedAccounts = profile.LinkedAccounts,
                     JobSeekingStatus = profile.JobSeekingStatus,
+                    Languages = languages,
                     Skills = skills,
+                    Experience = experience,
                 };
                 return result;
             }
@@ -129,6 +131,23 @@ namespace Talent.Services.Profile.Domain.Services
                     existingUser.UpdatedBy = updaterId;
                     existingUser.UpdatedOn = DateTime.Now;
 
+                    var newLanguages = new List<UserLanguage>();
+                    foreach (var item in talent.Languages)
+                    {
+                        var language = existingUser.Languages.SingleOrDefault(x => x.Id == item.Id);
+                        if (language == null)
+                        {
+                            language = new UserLanguage
+                            {
+                                Id = ObjectId.GenerateNewId().ToString(),
+                                IsDeleted = false
+                            };
+                        }
+                        UpdateLanguageFromView(item, language);
+                        newLanguages.Add(language);
+                    }
+                    existingUser.Languages = newLanguages;
+
                     var newSkills = new List<UserSkill>();
                     foreach (var item in talent.Skills)
                     {
@@ -145,6 +164,22 @@ namespace Talent.Services.Profile.Domain.Services
                         newSkills.Add(skill);
                     }
                     existingUser.Skills = newSkills;
+
+                    var newExperience = new List<UserExperience>();
+                    foreach (var item in talent.Experience)
+                    {
+                        var work = existingUser.Experience.SingleOrDefault(x => x.Id == item.Id);
+                        if (work == null)
+                        {
+                            work = new UserExperience
+                            {
+                                Id = ObjectId.GenerateNewId().ToString()
+                            };
+                        }
+                        UpdateExperienceFromView(item, work);
+                        newExperience.Add(work);
+                    }
+                    existingUser.Experience = newExperience;
 
                     await _userRepository.Update(existingUser);
                     return true;
@@ -324,8 +359,41 @@ namespace Talent.Services.Profile.Domain.Services
 
         public async Task<bool> UpdateTalentPhoto(string talentId, IFormFile file)
         {
-            //Your code here;
-            throw new NotImplementedException();
+            var fileExtension = Path.GetExtension(file.FileName);
+            List<string> acceptedExtensions = new List<string> { ".jpg", ".png", ".gif", ".jpeg" };
+
+            if (fileExtension != null && !acceptedExtensions.Contains(fileExtension.ToLower()))
+            {
+                return false;
+            }
+
+            var profile = (await _userRepository.Get(x => x.Id == talentId)).SingleOrDefault();
+
+            if (profile == null)
+            {
+                return false;
+            }
+
+            var newFileName = await _fileService.SaveFile(file, FileType.ProfilePhoto);
+
+            if (!string.IsNullOrWhiteSpace(newFileName))
+            {
+                var oldFileName = profile.ProfilePhoto;
+
+                if (!string.IsNullOrWhiteSpace(oldFileName))
+                {
+                    await _fileService.DeleteFile(oldFileName, FileType.ProfilePhoto);
+                }
+
+                profile.ProfilePhoto = newFileName;
+                profile.ProfilePhotoUrl = await _fileService.GetFileURL(newFileName, FileType.ProfilePhoto);
+
+                await _userRepository.Update(profile);
+                return true;
+            }
+
+            return false;
+
         }
 
         public async Task<bool> AddTalentVideo(string talentId, IFormFile file)
@@ -409,15 +477,40 @@ namespace Talent.Services.Profile.Domain.Services
 
         #region Update from View
 
+        protected void UpdateLanguageFromView(AddLanguageViewModel model, UserLanguage original)
+        {
+            original.LanguageLevel = model.Level;
+            original.Language = model.Name;
+        }
+
         protected void UpdateSkillFromView(AddSkillViewModel model, UserSkill original)
         {
             original.ExperienceLevel = model.Level;
             original.Skill = model.Name;
         }
 
+            protected void UpdateExperienceFromView(ExperienceViewModel model, UserExperience original)
+        {
+            original.Company = model.Company;
+            original.Position = model.Position;
+            original.Responsibilities = model.Responsibilities;
+            original.Start = model.Start;
+            original.End = model.End;
+        }
+
         #endregion
 
         #region Build Views from Model
+
+        protected AddLanguageViewModel ViewModelFromLanguage(UserLanguage language)
+        {
+            return new AddLanguageViewModel
+            {
+                Id = language.Id,
+                Level = language.LanguageLevel,
+                Name = language.Language
+            };
+        }
 
         protected AddSkillViewModel ViewModelFromSkill(UserSkill skill)
         {
@@ -426,6 +519,18 @@ namespace Talent.Services.Profile.Domain.Services
                 Id = skill.Id,
                 Level = skill.ExperienceLevel,
                 Name = skill.Skill
+            };
+        }
+        protected ExperienceViewModel ViewModelFromExperience(UserExperience experience)
+        {
+            return new ExperienceViewModel
+            {
+                Id = experience.Id,
+                Company = experience.Company,
+                Position = experience.Position,
+                Responsibilities = experience.Responsibilities,
+                Start = experience.Start,
+                End = experience.End
             };
         }
 

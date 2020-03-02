@@ -242,8 +242,14 @@ namespace Talent.Services.Profile.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "talent")]
         public async Task<ActionResult> UpdateProfilePhoto()
         {
-            //Your code here;
-            throw new NotImplementedException();
+            Console.WriteLine("inside UpdateProfilePhoto controller");
+            IFormFile file = Request.Form.Files[0];
+
+        if (await _profileService.UpdateTalentPhoto(_userAppContext.CurrentUserId, file))
+                {
+                    return Json(new { Success = true });
+                }
+            return Json(new { Success = false });
         }
 
         [HttpPost("updateTalentCV")]
@@ -414,7 +420,8 @@ namespace Talent.Services.Profile.Controllers
         {
             String talentId = String.IsNullOrWhiteSpace(id) ? _userAppContext.CurrentUserId : id;
             var userProfile = await _profileService.GetTalentProfile(talentId);
-          
+            Console.WriteLine("Valid");
+
             return Json(new { Success = true, data = userProfile });
         }
 
