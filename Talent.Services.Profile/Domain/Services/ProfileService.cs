@@ -423,9 +423,98 @@ namespace Talent.Services.Profile.Domain.Services
 
         public async Task<IEnumerable<TalentSnapshotViewModel>> GetTalentSnapshotList(string employerOrJobId, bool forJob, int position, int increment)
         {
-            //Your code here;
-            throw new NotImplementedException();
+            Employer profile = null;
+            var employerID = employerOrJobId;
+            if (forJob)
+            {
+                var job = await _jobRepository.GetByIdAsync(employerOrJobId);
+                employerID = job.EmployerID;
+            }
+
+            profile = await _employerRepository.GetByIdAsync(employerID);
+            var talentList = _userRepository.GetQueryable().Skip(position).Take(increment);
+
+            if (profile != null)
+            {
+                var result = new List<TalentSnapshotViewModel>();
+
+                foreach (var item in talentList)
+                {
+                    var photoId = "";
+                    if (item.ProfilePhotoUrl != null)
+                    {
+                        photoId = item.ProfilePhotoUrl;
+                    }
+
+                    var videoUrl = "";
+                    if (item.VideoName != null)
+                    {
+                        videoUrl = string.IsNullOrWhiteSpace(item.VideoName)
+                                  ? ""
+                                  : await _fileService.GetFileURL(item.VideoName, FileType.UserVideo);
+                    }
+
+                    var cvUrl = "";
+                    if (item.CvName != null)
+                    {
+                        cvUrl = string.IsNullOrWhiteSpace(item.CvName)
+                                  ? ""
+                                  : await _fileService.GetFileURL(item.CvName, FileType.UserVideo);
+                    }
+
+                    var summary = "";
+                    if (item.Summary != null)
+                    {
+                        summary = item.Summary;
+                    }
+
+                    // get current employment)
+                    var currentEmployment = "";
+                    if (item.Experience != null && item.Experience.Count > 0)
+                    {
+                        currentEmployment = item.Experience.First().Company;
+                    }
+
+                    var visa = "";
+                    if (item.VisaStatus != null)
+                    {
+                        visa = item.VisaStatus;
+                    }
+
+                    // Hardcoded to Junior at the moment until source data 
+                    var level = "not available";
+
+                    List<string> skills = new List<string>();
+                    if (item.Skills != null)
+                    {
+                        Console.WriteLine("Skills not null.");
+                        skills = item.Skills.Select(aSkill => aSkill.Skill).ToList();
+                        Console.WriteLine($"Count: {item.Skills.Count}");
+                    }
+
+                    var talentSnapshot = new TalentSnapshotViewModel
+                    {
+                        Id = item.Id,
+                        Name = item.FirstName + ' ' + item.LastName,
+                        PhotoId = photoId,
+                        VideoUrl = videoUrl,
+                        CVUrl = cvUrl,
+                        CurrentEmployment = currentEmployment,
+                        Level = level,
+                        Skills = skills,
+                        Summary = summary,
+                        Visa = visa
+                    };
+
+                    result.Add(talentSnapshot);
+                }
+
+                return result;
+            }
+
+            return null;
         }
+
 
         public async Task<IEnumerable<TalentSnapshotViewModel>> GetTalentSnapshotList(IEnumerable<string> ids)
         {
@@ -489,7 +578,7 @@ namespace Talent.Services.Profile.Domain.Services
             original.Skill = model.Name;
         }
 
-            protected void UpdateExperienceFromView(ExperienceViewModel model, UserExperience original)
+        protected void UpdateExperienceFromView(ExperienceViewModel model, UserExperience original)
         {
             original.Company = model.Company;
             original.Position = model.Position;

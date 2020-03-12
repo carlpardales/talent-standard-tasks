@@ -99,8 +99,13 @@ export default class PhotoUpload extends Component {
         formData.append('file', $('#profilePhoto')[0].files[0]);
 
         var cookies = Cookies.get('talentAuthToken');
+
+        //Uses azure URL for review purposes.
+        //Revert to this.props.savePhotoUrl to run locally.
+        const azureUrl = 'https://standardtasktalentservicesprofile.azurewebsites.net/profile/profile/updateProfilePhoto';
+
         $.ajax({
-            url: this.props.savePhotoUrl,
+            url: azureUrl,
             headers: {
                 'Authorization': 'Bearer ' + cookies
             },

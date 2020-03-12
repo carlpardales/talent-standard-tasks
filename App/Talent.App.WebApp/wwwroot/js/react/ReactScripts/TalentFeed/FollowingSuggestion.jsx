@@ -8,18 +8,14 @@ export default class FollowingSuggestion extends React.Component {
                 <div className="center aligned header">Follow Talent</div>
                 <div className="ui items following-suggestion">
                     <div className="item">
-                        <div className="ui image">
-                            <img className="ui circular image" src="http://semantic-ui.com/images/avatar/small/jenny.jpg" />
-                        </div>
+                        <img className="ui circular image" src="http://semantic-ui.com/images/avatar/small/jenny.jpg" />
                         <div className="content">
                             <a className="">Veronika Ossi</a>
                             <button className="ui primary basic button"><i className="icon user"></i>Follow</button>
                         </div>
                     </div>
                     <div className="item">
-                        <div className="ui image">
-                            <img className="ui circular image" src="http://semantic-ui.com/images/avatar/small/jenny.jpg" />
-                        </div>
+                        <img className="ui circular image" src="http://semantic-ui.com/images/avatar/small/jenny.jpg" />
                         <div className="content">
                             <a className="">Veronika Ossi</a>
                             <button className="ui primary basic button"><i className="icon user"></i>Follow</button>
